@@ -1,0 +1,124 @@
+def id_generator(id_number):
+    """Yields the next value of the aforementioned.
+    :param id_number: id_number value
+    :::type id_number: int
+    :return: the value of the next generator
+    :raise: Over: exception when the ID and/or ensuing figures
+    exceeds the range
+    """
+    tally = 0
+    while tally < 10:
+        id_number += 1
+        if check_id_valid(id_number):
+            if 100000000 <= id_number < 999999999:
+                tally += 1
+                yield id_number
+            else:
+                raise Over
+
+
+class Incorrect(Exception):
+    """a class invoked when user doesn't type in a valid response,
+    and message ensuing"""
+
+    def __str__(self):
+        return (
+            'You need to type a 9 digit number which includes only'
+            ' integers and is bigger than 100000000.')
+
+
+class Inexact(Exception):
+    """another class invoked when user doesn't type in a valid response,
+    and message ensuing"""
+
+    def __str__(self):
+        return 'You need to type either "gen" or "in"'
+
+
+class Over(Exception):
+    """a class to check if user number exceeded from range"""
+
+    def __str__(self):
+        return (
+            "can't produce additional 10 IDs in the"
+            " correct range (100000000 - 999999999)")
+
+
+class IDIterator:
+    """a class used to represent the iterator of the number provided """
+
+    def __init__(self, id):
+        self._id = id
+        self._count = 0
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        while self._count < 10:
+            self._id += 1
+            if check_id_valid(self._id):
+                if 100000000 <= self._id < 999999999:
+                    self._count += 1
+                    return self._id
+                else:
+                    raise Over
+        raise StopIteration
+
+
+def check_id_valid(id_number):
+    """checks if what was typed in is valid
+    :param id_number: what was typed in
+    :type id_number: int
+    :return: True or False, depending if what was typed in is valid or not.
+    :rtype: bool
+    :raise: Incorrect: exception if the number isn't in range,
+    not the right lentgth or includes non-integers"""
+    inital_list = []
+    seperated_numbers = [int(
+        seprated_number) for seprated_number
+        in str(id_number)]  # splits all numbers digits in number given
+    if len(seperated_numbers) != 9 or not isinstance(id_number, int):
+        raise Incorrect
+    for seprated_number in range(len(seperated_numbers)):
+        if (seprated_number % 2) == 0:
+            inital_list.append(seperated_numbers[seprated_number])
+        else:
+            inital_list.append(seperated_numbers[seprated_number]*2)
+    final_list = []
+    for number in inital_list:
+        if number > 9:
+            new_number = [int(
+                seprated_number) for seprated_number
+                in str(number)]  # another split of digits in given number
+            final_list.append(sum(new_number))
+        else:
+            final_list.append(number)
+    if sum(final_list) % 10 == 0:
+        return True
+    else:
+        return False
+
+
+def main():
+    try:
+        user_input = int(input("Please type in ID:"))
+    except ValueError:
+        raise Incorrect
+    ask_user = str(input("generator or iterator (gen/it):"))
+    if ask_user == "it":
+        iterator_obj = iter(IDIterator(user_input))
+        for x in iterator_obj:
+            if check_id_valid(x):
+                print(x)
+    elif ask_user == "gen":
+        call_genfun = id_generator(user_input)
+        for x in call_genfun:
+            if check_id_valid(x):
+                print(x)
+    else:
+        raise Inexact
+
+
+if __name__ == "__main__":
+    main()
